@@ -5,6 +5,7 @@ $uploadOk = 1;
 $param_wc="";
 $param_username="";
 $param_filename="";
+session_start();
 require_once "config.php";
 $FileType = strtolower(pathinfo($target_file,PATHINFO_EXTENSION));
 // Check if image file is a actual image or fake image
@@ -41,11 +42,12 @@ if(isset($_POST["submit"])) {
       // if everything is ok, try to upload file
     }
         else {
-                echo "target file$target_file";
+               // echo "target file$target_file";
                 $file_to_upload = $_FILES["fileToUpload"]["tmp_name"];
-                echo "adad$file_to_upload\n";
+                //echo "adad$file_to_upload\n";
                 $uploaded = is_uploaded_file($file_to_upload);
                 echo "file uploaded $uploaded";
+                echo "<html> <br></html>";
         if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
            $actual_filename = basename( $_FILES["fileToUpload"]["name"]);
            echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
@@ -55,11 +57,13 @@ if(isset($_POST["submit"])) {
            echo "<html> <br></html>";
            echo "uploaded file word count : ";
            $wc = system($command_wc);
-           $_SESSION['file_name'] = $actual_filename;
-           $uname = $_SESSION['username'];
+           $_SESSION['filename'] = $actual_filename;
+	   $uname = $_SESSION['username'];
+	   $_SESSION['wordcount'] = $wc;
            //$query_f = "UPDATE users SET filename = $actual_filename, wordcount = $wc WHERE username = $uname";
 	   //$res = mysqli_query($db_f, $query_f);
 	   echo "<p><br></p><a href='download.php?file=$actual_filename'>Download file</a>";
+	   echo "<p><br></p><a href='welcome.php'>HOME </a>";
 	   //begin of world
 	   $mysqli = new mysqli("localhost", "root", "anubhav", "loginsystem");
            if($mysqli->connect_error) {
@@ -67,8 +71,10 @@ if(isset($_POST["submit"])) {
            }
            mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 	   $mysqli->set_charset("utf8mb4");
-	   $stmt = $mysqli->prepare("UPDATE users SET filename = ? WHERE username = ?");
-           $stmt->bind_param("ss", $actual_filename, $uname);
+	   $stmt = $mysqli->prepare("UPDATE users SET filename = ?, wordcount = ? WHERE username = ?");
+	   //echo "NAME : ";
+	   //echo $uname;
+           $stmt->bind_param("sss", $actual_filename, $wc, $uname);
            $stmt->execute();
            $stmt->close();
 	   //$sql = "UPDATE users SET filename = ?,wordcount = ? where username = ?";
